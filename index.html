@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>[멀티 플레이 업데이트] 2D 달걀 훔쳐</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#10251c;color:#fff;font-family:Arial,sans-serif}header{text-align:center;background:#183e2c;padding:12px}h1{margin:0 0 8px;font-size:24px}.hud{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;padding:9px}.stat,.panel{background:#204632;border-radius:10px;padding:9px 12px}main{max-width:1100px;margin:auto;padding:8px}canvas{display:block;width:100%;border:3px solid #41654a;border-radius:10px;background:#9cdd77;touch-action:none}.controls{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}.controls button,button{border:0;border-radius:9px;padding:11px;background:#34784a;color:white;font-weight:bold;cursor:pointer}.controls button:active,button:active{filter:brightness(1.2)}#message{background:#203b2b;padding:10px;border-radius:8px;margin:8px 0;min-height:38px}.bottom{display:grid;grid-template-columns:1fr 1fr;gap:9px}.panel h3{margin:0 0 8px}.small{font-size:12px;color:#c9e6d1}#pets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.pet{background:#315b40;border-radius:7px;padding:6px;text-align:center;font-size:12px}#chatlog{height:105px;overflow-y:auto;background:#12291d;padding:8px;border-radius:7px;font-size:13px;margin-bottom:7px;overflow-wrap:anywhere}.chatrow{display:flex;gap:5px}input{min-width:0;width:100%;padding:10px;border-radius:8px;border:1px solid #60806a;background:#f5fff6;color:#132719}.pad{display:grid;grid-template-columns:repeat(3,43px);gap:4px}.pad button{padding:10px 0;font-size:18px}#joystick-wrap{display:flex;align-items:center;gap:12px;margin:12px 0;padding:10px;background:#204632;border-radius:12px;touch-action:none;user-select:none}#joystick{width:132px;height:132px;flex:0 0 132px;border-radius:50%;background:radial-gradient(circle,#4f795b 0 30%,#315a40 31% 68%,#24452f 69%);border:3px solid #83b78a;position:relative;touch-action:none}#joy-knob{position:absolute;width:54px;height:54px;left:36px;top:36px;border-radius:50%;background:#d7f0a4;border:3px solid #fff;box-shadow:0 2px 8px #10251c88;pointer-events:none}#joystick-help{font-size:13px;color:#d5ead8;line-height:1.5}.view-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}.view-controls button{min-width:48px;font-size:17px}.view-controls span{font-size:13px;color:#d5ead8}.hidden{display:none!important}#help-panel{margin:8px 0;background:#183e2c;border:2px solid #b7ef78;border-radius:12px;padding:12px;line-height:1.6}#help-panel h3{margin:0 0 8px}#help-panel ul{margin:6px 0;padding-left:22px}#trade-panel{margin:8px 0;background:#183e2c;border:2px solid #d7a42e;border-radius:12px;padding:12px}#trade-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:7px}#trade-items button{background:#a87520}#trade-panel h3{margin:0 0 8px}#start{position:fixed;inset:0;background:#0d2119ee;z-index:5;display:flex;align-items:center;justify-content:center;padding:18px}#startbox{width:min(420px,100%);background:#214932;padding:22px;border-radius:16px;text-align:center}#startbox input{margin:12px 0}#choices{display:flex;gap:10px}#choices button{flex:1;font-size:22px;padding:17px}#startbtn{width:100%;margin-top:12px;background:#d7a42e;color:#1d2517;font-size:17px}@media(max-width:600px){.bottom{grid-template-columns:1fr}#pets{grid-template-columns:repeat(3,1fr)}h1{font-size:20px}}
+</style></head><body>
+<div id="start"><div id="startbox"><h1>🥚 [멀티 플레이 업데이트] 2D 달걀 훔쳐</h1><p>캐릭터와 닉네임을 선택하세요.</p><input id="nick" maxlength="16" placeholder="닉네임 입력"><div id="choices"><button data-char="🧍‍♂️">🧍‍♂️<br><small>남자</small></button><button data-char="🧍‍♀️">🧍‍♀️<br><small>여자</small></button></div><p id="choicehint">캐릭터를 선택하세요.</p><button id="startbtn">게임 시작</button></div></div>
+<header><h1>🥚 [멀티 플레이 업데이트] 2D 달걀 훔쳐</h1><div id="welcome" class="small">동물 구역을 탐험하고 알을 모으세요!</div><div id="onlineStatus" class="small" style="margin-top:6px;color:#ffe082">서버 연결 전</div></header>
+<div class="hud"><div class="stat">💰 $<span id="money">100</span></div><div class="stat">🏃 속도 <span id="speed">1</span></div><div class="stat">🥚 알 <span id="eggs">0</span></div><div class="stat">🐾 펫 <span id="count">0</span></div><div class="stat">💵 초당 수익 $<span id="income">0</span></div><div class="stat">🏠 내 기지 <span id="capacity">0/100</span></div></div>
+<main><div class="view-controls"><button id="zoomout" aria-label="화면 축소">−</button><button id="zoomin" aria-label="화면 확대">＋</button><button id="zoomreset">기본 화면</button><button id="help-toggle">📖 플레이 방법</button><span>화면 확대: <b id="zoomlevel">100%</b> · 원형 조이스틱으로 이동</span></div><section id="help-panel" class="hidden"><h3>📖 플레이 방법 설명서</h3><ul><li><b>이동:</b> 컴퓨터는 WASD 또는 방향키, 휴대폰은 원형 조이스틱이나 방향 버튼을 사용하세요.</li><li><b>알 줍기:</b> 알 가까이 이동한 뒤 <b>알 줍기 (E)</b> 버튼을 누르세요. 컴퓨터에서는 E 키도 사용할 수 있습니다. 동물 자체는 잡을 수 없습니다.</li><li><b>기지로 귀환:</b> 알을 들고 <b>기지로 귀환</b> 버튼을 누르면 알에서 동물이 나와 기지에 들어갑니다.</li><li><b>동물과 돈:</b> 동물은 알을 가져와 부화시켜야 기지에 들어오며, 기지의 동물은 초당 돈을 벌어 줍니다. 야생 동물은 잡을 수 없습니다. 향유 고래는 기지보다 크며, 플레이어가 런닝머신에서 2분 훈련해 얻는 속도와 같은 속도로 달립니다.</li><li><b>거래 모드:</b> 거래 모드에서 돈으로 알을 사거나 기지의 동물을 판매할 수 있습니다.</li><li><b>런닝머신 훈련:</b> 훈련 시간은 순서대로 1분, 2분, 4분, 8분, 10분, 34분, 50분, 1시간입니다. 훈련 중에는 이동할 수 없습니다.</li><li><b>화면 조절:</b> − / ＋ 버튼으로 확대·축소하고, 기본 화면 버튼으로 100%로 되돌리세요.</li><li><b>기지 수용량:</b> 내 기지는 동물을 최대 100마리까지 보관할 수 있습니다.</li></ul><button id="help-close" style="background:#536b59">설명서 닫기</button></section><canvas id="game" width="1000" height="520"></canvas><div id="joystick-wrap"><div id="joystick" aria-label="이동 조이스틱"><div id="joy-knob"></div></div><div id="joystick-help"><b>이동 조이스틱</b><br>원 안에서 원하는 방향으로 끌어 움직이세요.<br>컴퓨터에서는 WASD 또는 방향키도 사용할 수 있습니다.</div></div><div id="message">WASD 또는 방향키로 이동하세요. 풀잎 알·점박이 알·숲 알·황금 알·상어 알·고래 알·범고래 알·향유 고래 알·드래곤 알을 찾아보세요!</div>
+<div class="controls"><button id="act">🥚 알 줍기 / 상호작용 (E)</button><button id="train">🏃 런닝머신 훈련 (1분)</button><button id="upgrade">🏠 기지 업그레이드</button><button id="home">🏡 기지로 귀환</button><button id="trade-toggle">🔄 거래 모드</button><span class="small" id="future-player-trade">[업데이트 예정인 비공개 서버 플레이어 거래 모드]</span></div><section id="trade-panel" class="hidden"><h3>🔄 거래 모드 — 상인</h3><p class="small">돈으로 알을 구매하거나, 기지의 동물을 판매할 수 있습니다. 거래는 취소할 수 없으니 확인하세요.</p><div id="trade-items"></div><button id="trade-close" style="margin-top:8px;background:#536b59">거래 모드 닫기</button></section>
+<div class="bottom"><section class="panel"><h3>🐾 내 기지 — <span id="basecount">0/100</span></h3><div id="pets"><div class="small">아직 동물이 없습니다.</div></div><p class="small">동물은 초당 돈을 벌어 줍니다. 기지에는 최대 100마리까지 둘 수 있습니다.</p></section>
+<section class="panel"><h3>💬 채팅</h3><div id="chatlog"><div class="small">채팅 메시지를 입력하세요.</div></div><div class="chatrow"><input id="chatinput" maxlength="120" placeholder="메시지 입력 후 Enter"><button id="send">전송</button></div><p class="small">이 채팅은 현재 내 게임 화면 안에서만 표시됩니다.</p></section></div>
+<div class="controls"><div class="pad"><span></span><button id="up">▲</button><span></span><button id="left">◀</button><button id="down">▼</button><button id="right">▶</button></div><span class="small">휴대폰은 방향 버튼으로 이동할 수 있어요.</span></div></main>
+<script>
+const c=document.getElementById('game'),ctx=c.getContext('2d'),$=id=>document.getElementById(id);
+const WORLD={w:5000,h:33000};
+const eggTypes=[
+{name:'풀잎 알',icon:'🥚',color:'#f4f0ce',x:500,rarity:'일반',pool:[0,1,2,3,4]},
+{name:'점박이 알',icon:'🟤',color:'#d6b27b',x:950,rarity:'일반',pool:[1,2,3,4,5]},
+{name:'숲 알',icon:'🌿',color:'#8fd16a',x:1450,rarity:'일반',pool:[4,5,6,7]},
+{name:'황금 알',icon:'🌟',color:'#ffd447',x:1900,rarity:'희귀',pool:[6,7,8,9]},
+{name:'상어 알',icon:'🦈',color:'#6bd5f2',x:2850,rarity:'고급',pool:[10]},
+{name:'고래 알',icon:'🐋',color:'#3678d8',x:3300,rarity:'희귀',pool:[11]},
+{name:'범고래 알',icon:'⚫',color:'#e9f4ff',x:3850,rarity:'고급',pool:[11,12]},
+{name:'향유 고래 알',icon:'🐋',color:'#7fb9d9',x:3550,rarity:'고급',pool:[14]},
+{name:'드래곤 알',icon:'🐉',color:'#e34b37',x:4450,rarity:'고급',pool:[13]}
+];
+const species=[
+{name:'닭',icon:'🐔',income:2,x:600,rarity:0.55},
+{name:'토끼',icon:'🐇',income:3,x:700,rarity:0.5},
+{name:'돼지',icon:'🐖',income:4,x:850,rarity:0.45},
+{name:'소',icon:'🐄',income:6,x:1000,rarity:0.4},
+{name:'양',icon:'🐑',income:7,x:1150,rarity:0.4},
+{name:'여우',icon:'🦊',income:12,x:1450,rarity:0.35},
+{name:'곰',icon:'🐻',income:18,x:1650,rarity:0.3},
+{name:'사자',icon:'🦁',income:25,x:1900,rarity:0.25},
+{name:'코끼리',icon:'🐘',income:35,x:2150,rarity:0.23},
+{name:'기린',icon:'🦒',income:40,x:2350,rarity:0.2},
+{name:'상어',icon:'🦈',income:75,x:2900,rarity:0.18},
+{name:'고래',icon:'🐋',income:100,x:3300,rarity:0.15},
+{name:'범고래',icon:'🐳',income:150,x:3800,rarity:0.12},
+{name:'드래곤',icon:'🐉',income:300,x:4450,rarity:0.07},
+{name:'향유 고래',icon:'🐋',income:500,x:3550,rarity:0.05,giant:true,speed:2}
+];
+let selectedChar='',started=false,keys={},touch={},joy={x:0,y:0,active:false};
+let zoom=1;
+// 온라인 멀티플레이 연결
+let socket=null,myPlayerId=null,remotePlayers={};
+let lastNetSend=0;
+function connectMultiplayer(){
+ if(socket && (socket.readyState===WebSocket.OPEN||socket.readyState===WebSocket.CONNECTING))return;
+ const proto=location.protocol==='https:'?'wss:':'ws:';
+ const url=proto+'//'+location.host;
+ try{socket=new WebSocket(url);}catch(e){$('onlineStatus').textContent='서버 연결 실패: 서버 주소를 확인하세요.';return;}
+ $('onlineStatus').textContent='서버에 연결 중…';
+ socket.addEventListener('open',()=>{
+  $('onlineStatus').textContent='온라인 연결됨';
+  socket.send(JSON.stringify({type:'join',nick:game.nick,char:game.char,x:game.x,y:game.y}));
+ });
+ socket.addEventListener('message',ev=>{
+  let msg;try{msg=JSON.parse(ev.data)}catch{return}
+  if(msg.type==='welcome'){myPlayerId=msg.id;remotePlayers=msg.players||{};delete remotePlayers[myPlayerId];$('onlineStatus').textContent='온라인 · '+(Object.keys(remotePlayers).length+1)+'명 접속';}
+  if(msg.type==='players'){remotePlayers=msg.players||{};if(myPlayerId)delete remotePlayers[myPlayerId];$('onlineStatus').textContent='온라인 · '+(Object.keys(remotePlayers).length+1)+'명 접속';}
+  if(msg.type==='chat'){addChatLine(msg.nick||'플레이어',msg.text||'');}
+  if(msg.type==='system'){addChatLine('시스템',msg.text||'');}
+ });
+ socket.addEventListener('close',()=>{$('onlineStatus').textContent='서버 연결 끊김 · 새로고침 후 다시 시도하세요.';remotePlayers={};});
+ socket.addEventListener('error',()=>{$('onlineStatus').textContent='서버 연결 오류 · 온라인 서버에 배포했는지 확인하세요.';});
+}
+function sendPlayerState(now){
+ if(!started||!socket||socket.readyState!==WebSocket.OPEN||now-lastNetSend<70)return;
+ lastNetSend=now;
+ socket.send(JSON.stringify({type:'move',x:Math.round(game.x),y:Math.round(game.y),char:game.char,nick:game.nick}));
+}
+
+const game={nick:'플레이어',char:'🧍‍♂️',money:100,speed:1,eggs:0,x:160,y:300,cameraX:0,cameraY:0,capacity:100,pets:[],carrying:null,eggX:520,eggReady:true,eggSpots:[],animals:[],nearby:null,lastTime:0,animalSpeedBoost:1,stolenEggs:0,hunted:false,chaser:null,playerDead:false,training:false,trainingLeft:0,runner:false,trainingCount:0};
+species.forEach((s,i)=>{const count=s.giant?1:5;for(let j=0;j<count;j++){game.animals.push({species:s,x:s.x+j*48+(i%2)*15,y:s.giant?430:300+(j%3)*35,dir:Math.random()<.5?-1:1,step:Math.random()*3,zoneLeft:Math.max(400,s.x-150),zoneRight:Math.min(WORLD.w-100,s.x+270)});}});
+eggTypes.forEach((e,i)=>{for(let j=0;j<10;j++)game.eggSpots.push({type:e,x:e.x+(j%5)*42,y:330+Math.floor(j/5)*65,ready:true});});
+document.querySelectorAll('[data-char]').forEach(b=>b.onclick=()=>{selectedChar=b.dataset.char;document.querySelectorAll('[data-char]').forEach(x=>x.style.outline=x===b?'3px solid #ffdb63':'none');$('choicehint').textContent='선택한 캐릭터: '+selectedChar;});
+$('startbtn').onclick=()=>{if(!selectedChar){$('choicehint').textContent='먼저 캐릭터를 선택하세요.';return}game.nick=$('nick').value.trim()||'플레이어';game.char=selectedChar;started=true;$('start').classList.add('hidden');$('welcome').textContent=game.nick+'님, 동물 세계에 오신 것을 환영합니다!';connectMultiplayer();say('게임에 들어왔습니다. 서버 연결 상태를 확인하세요.');ui();};
+function say(t){$('message').textContent=t}
+function ui(){$('money').textContent=Math.floor(game.money).toLocaleString();$('speed').textContent=game.speed;$('eggs').textContent=game.eggs+(game.carrying?' +1 운반 중':'');$('count').textContent=game.pets.length;$('income').textContent=game.pets.reduce((a,p)=>a+p.income,0);$('capacity').textContent=game.pets.length+'/100';$('basecount').textContent=game.pets.length+'/100';$('pets').innerHTML=game.pets.length?game.pets.map(p=>`<div class="pet">${p.icon} ${p.name}<br>+$${p.income}/초</div>`).join(''):'<div class="small">아직 동물이 없습니다.</div>'}
+function draw(){
+ctx.clearRect(0,0,c.width,c.height);
+const camX=game.cameraX,camY=game.cameraY;
+ctx.save();ctx.scale(zoom,zoom);ctx.translate(-camX,-camY);
+ctx.fillStyle='#a9df7c';ctx.fillRect(camX,camY,c.width/zoom,c.height/zoom);
+// long landscape bands and labels
+ctx.fillStyle='#83c96d';ctx.fillRect(400,0,1050,WORLD.h);
+ctx.fillStyle='#70b9d5';ctx.fillRect(2650,0,1000,WORLD.h);
+ctx.fillStyle='#e4c67a';ctx.fillRect(3650,0,1350,WORLD.h);
+ctx.fillStyle='#a9df7c';ctx.fillRect(0,0,400,WORLD.h);
+ctx.fillStyle='#245d37';ctx.font='bold 32px Arial';ctx.fillText('🏠 내 기지',45,85);
+ctx.fillStyle='#245d37';ctx.font='bold 26px Arial';ctx.fillText('🐾 동물들이 많은 곳',500,85);ctx.fillText('🌲 숲',1500,85);
+ctx.fillStyle='#124d6c';ctx.fillText('🌊 바다 — 상어·고래·향유 고래',2750,85);
+ctx.fillStyle='#855e1c';ctx.fillText('🏜️ 깊은 사막 — 드래곤',3750,85);
+// 다른 인간 플레이어들의 기지는 내 기지 바로 아래 연두색 칸에 배치합니다.
+// 각 기지는 내 기지와 정확히 같은 크기(330×300)이며 같은 내부 구조입니다.
+ctx.fillStyle='#245d37';ctx.font='bold 22px Arial';ctx.fillText('🏘️ 인간 기지 구역 · 총 100개',18,455);
+for(let i=1;i<100;i++){
+ const bx=25, by=450+(i-1)*320;
+ // 연두색 칸은 기지 전체를 감싸고, 모든 칸의 크기가 같습니다.
+ ctx.fillStyle='#b7ef78';ctx.fillRect(15,by-10,350,320);
+ ctx.strokeStyle='#4b9b46';ctx.lineWidth=2;ctx.strokeRect(16,by-9,348,318);
+ // 동일한 울타리와 바닥
+ ctx.fillStyle='#8b603c';ctx.fillRect(bx,by,330,300);
+ ctx.fillStyle='#d6b17a';ctx.fillRect(bx+10,by+10,310,280);
+ ctx.strokeStyle='#f5e5a5';ctx.lineWidth=8;ctx.strokeRect(bx+10,by+10,310,280);
+ // 건물과 기지 표시
+ ctx.fillStyle='#65452c';ctx.fillRect(bx+40,by+45,120,80);
+ ctx.fillStyle='#fff';ctx.font='bold 19px Arial';ctx.fillText('기지 '+(i+1),bx+48,by+78);
+ ctx.font='16px Arial';ctx.fillText('0/100',bx+50,by+103);
+ // 런닝머신과 내 기지와 같은 배치
+ ctx.fillStyle='#37474f';ctx.fillRect(bx+180,by+130,105,35);
+ ctx.fillStyle='#cfd8dc';ctx.fillRect(bx+190,by+136,82,12);
+ ctx.fillStyle='#263238';ctx.fillRect(bx+186,by+126,8,44);ctx.fillRect(bx+272,by+126,8,44);
+ ctx.fillStyle='#fff';ctx.font='12px Arial';ctx.fillText('런닝머신',bx+205,by+187);
+ ctx.fillStyle='#fff';ctx.font='14px Arial';ctx.fillText('입구',bx+255,by+275);
+}
+// base enclosure
+ctx.fillStyle='#8b603c';ctx.fillRect(25,120,330,300);ctx.fillStyle='#d6b17a';ctx.fillRect(35,130,310,280);
+ctx.strokeStyle='#f5e5a5';ctx.lineWidth=8;ctx.strokeRect(35,130,310,280);
+ctx.fillStyle='#65452c';ctx.fillRect(65,165,120,80);ctx.fillStyle='#fff';ctx.font='bold 19px Arial';ctx.fillText('기지',105,210);ctx.font='16px Arial';ctx.fillText(game.pets.length+'/100',75,235);
+// 런닝머신
+ctx.fillStyle='#37474f';ctx.fillRect(205,250,105,35);ctx.fillStyle='#cfd8dc';ctx.fillRect(215,256,82,12);ctx.fillStyle='#263238';ctx.fillRect(211,246,8,44);ctx.fillRect(297,246,8,44);ctx.fillStyle='#fff';ctx.font='12px Arial';ctx.fillText('런닝머신',230,307);
+if(game.training){ctx.fillStyle='#183e2c';ctx.fillRect(195,315,125,22);ctx.fillStyle='#fff';ctx.font='12px Arial';ctx.fillText('훈련 '+Math.ceil(game.trainingLeft)+'초',205,330);}
+game.pets.slice(0,22).forEach((p,i)=>{ctx.font='24px Arial';ctx.fillText(p.icon,48+(i%8)*36,290+Math.floor(i/8)*40)});
+ctx.fillStyle='#fff';ctx.font='14px Arial';ctx.fillText('입구',280,395);
+// Invisible animal-only boundaries: humans can cross freely, animals stay inside their own zones. No boundary lines are drawn.
+game.animals.forEach(a=>{if(a.species.giant){ctx.font='360px Arial';ctx.fillText(a.species.icon,a.x-180,a.y);ctx.font='bold 28px Arial';ctx.fillStyle='#123e58';ctx.fillText('향유 고래 · 기지보다 큼',a.x,a.y+25);ctx.fillStyle='#000';}else{ctx.font='31px Arial';ctx.fillText(a.species.icon,a.x,a.y);}});
+game.eggSpots.forEach(e=>{if(!e.ready)return;ctx.fillStyle=e.type.color;ctx.beginPath();ctx.ellipse(e.x,e.y,20,25,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.stroke();ctx.font='20px Arial';ctx.fillText(e.type.icon,e.x-10,e.y+7);ctx.font='12px Arial';ctx.fillStyle='#183a22';ctx.fillText(e.type.name+' · '+e.type.rarity,e.x-42,e.y+40)});
+// 다른 온라인 플레이어 그리기
+Object.values(remotePlayers).forEach(p=>{
+ if(!p || p.id===myPlayerId) return;
+ ctx.font='36px Arial';ctx.fillText(p.char||'🧍‍♂️',p.x-18,p.y);
+ ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.fillStyle='#173b22';ctx.fillText(p.nick||'플레이어',p.x,p.y+10);ctx.textAlign='left';
+});
+// player's character
+ctx.font='36px Arial';ctx.fillText(game.char,game.x-18,game.y);
+if(game.carrying){ctx.font='25px Arial';ctx.fillText(game.carrying.type.icon,game.x+7,game.y-30)}
+ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.fillStyle='#173b22';ctx.fillText(game.nick,game.x,game.y+10);ctx.textAlign='left';
+ctx.restore();
+// minimap
+ctx.fillStyle='#153b27';ctx.fillRect(c.width-220,12,205,32);ctx.fillStyle='#d9f6a8';ctx.fillRect(c.width-216,16,197,24);ctx.fillStyle='#2467ce';ctx.fillRect(c.width-216+game.x/WORLD.w*197-3,15,6,26);ctx.fillStyle='#fff';ctx.font='12px Arial';ctx.fillText('맵 진행도',c.width-220,58);
+}
+function move(dx,dy){game.x=Math.max(20,Math.min(WORLD.w-25,game.x+dx));game.y=Math.max(100,Math.min(WORLD.h-30,game.y+dy));}
+function action(){
+if(!started)return;
+if(game.carrying&&game.x<370&&game.y>100&&game.y<430){
+ const egg=game.carrying;game.carrying=null;game.eggs++;game.money+=10;
+ const pool=egg.type.pool.map(i=>species[i]);
+ const p=pool[Math.floor(Math.random()*pool.length)]||species[0];
+ if(game.pets.length<100){game.pets.push({name:p.name,icon:p.icon,income:p.income});say(egg.type.icon+' '+egg.type.name+'에서 '+p.icon+' '+p.name+'이(가) 나왔습니다! 기지 '+game.pets.length+'/100');}
+ else say('기지가 가득 찼습니다! '+egg.type.name+'을 가져왔지만 100/100입니다.');
+ ui();return;
+}
+if(!game.carrying){
+ const available=game.eggSpots.filter(e=>e.ready).sort((a,b)=>Math.hypot(a.x-game.x,a.y-game.y)-Math.hypot(b.x-game.x,b.y-game.y));
+ const e=available[0];
+ if(e && Math.hypot(e.x-game.x,e.y-game.y)<115){
+  game.carrying=e;e.ready=false;game.stolenEggs++;game.hunted=true;game.chaser=game.animals.slice().sort((a,b)=>Math.hypot(a.x-game.x,a.y-game.y)-Math.hypot(b.x-game.x,b.y-game.y))[0]||null;
+  setTimeout(()=>{if(game.eggSpots.includes(e) && game.carrying!==e && (!e.lost || e.type.name==='용의 알')){e.lost=false;e.ready=true;}},9000);
+  game.animals.forEach(a=>{a.dir=a.dir||1;});
+  say(e.type.icon+' '+e.type.name+'을 훔쳤습니다! 동물들이 냄새를 맡고 쫓아옵니다! 잡히지 말고 기지로 도망가세요!');ui();return;
+ }
+ }
+const nextEgg=game.eggSpots.filter(e=>e.ready).sort((a,b)=>Math.hypot(a.x-game.x,a.y-game.y)-Math.hypot(b.x-game.x,b.y-game.y))[0];say(nextEgg?'가장 가까운 알: '+nextEgg.type.icon+' '+nextEgg.type.name+' — 알에 바짝 다가가서 E를 누르세요.':'주변에 줍을 수 있는 알이 없습니다. 동물은 잡을 수 없습니다.');
+}
+document.addEventListener('keydown',e=>{
+const k=e.key.toLowerCase();
+if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
+keys[k]=true;if(k==='e'||k===' ')action();
+if(k==='enter'&&document.activeElement!==$('chatinput')){$('chatinput').focus()}
+});
+document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function frame(t){
+if(started&&!game.playerDead){let dt=Math.min(32,t-(game.lastTime||t));game.lastTime=t;let dx=0,dy=0;
+if(keys.a||keys.arrowleft||touch.left)dx--;if(keys.d||keys.arrowright||touch.right)dx++;
+if(keys.w||keys.arrowup||touch.up)dy--;if(keys.s||keys.arrowdown||touch.down)dy++;
+dx+=joy.x;dy+=joy.y;
+if((dx||dy)&&!game.training){const norm=Math.hypot(dx,dy)||1;move(dx/norm*game.speed*dt*.22,dy/norm*game.speed*dt*.22)}
+if(game.training){game.trainingLeft-=dt/1000;$('train').textContent='훈련 중: '+Math.max(0,Math.ceil(game.trainingLeft))+'초';if(game.trainingLeft<=0){game.training=false;game.trainingLeft=0;game.runner=true;if(game.trainingCount===2)game.speed=2;game.char=game.char==='🧍‍♀️'?'🏃‍♀️':'🏃‍♂️';say('훈련 완료! 이제 '+game.char+' 캐릭터가 되었습니다!'+(game.trainingCount===2?' 달리는 속도가 2로 증가했습니다!':''));$('train').textContent='🏃 다시 훈련 ('+formatTrainingDuration(nextTrainingDuration())+')';ui();}}
+game.animals.forEach(a=>{
+ const dist=Math.hypot(game.x-a.x,game.y-a.y);
+ // 동물 단계가 높아질수록 빨라집니다. 드래곤은 압도적으로 빠릅니다.
+ const stageSpeed=a.species.name==='드래곤'?5.5:a.species.name==='범고래'?2.75:['상어','고래','향유 고래'].includes(a.species.name)?1.375:(a.species.x>=1900?1.55:a.species.x>=1450?1.3:1);
+ if(game.hunted&&a===game.chaser&&dist<1100){
+   const dxp=game.x-a.x, dyp=game.y-a.y, d=Math.hypot(dxp,dyp)||1;
+   const chaseSpeed=a.species.name==='드래곤'?12.5:a.species.name==='범고래'?6.25:(['상어','고래','향유 고래'].includes(a.species.name)?3.125:.24*stageSpeed);
+   // 속도 비율: 드래곤 100%, 범고래 50%, 상어·고래·향유 고래 25%.
+   a.x+=dxp/d*chaseSpeed;a.y+=dyp/d*chaseSpeed;
+ }else{a.x+=a.dir*(.15*stageSpeed);a.y+=Math.sin(t/700+a.step)*.13;}
+ if(a.x<=a.zoneLeft){a.x=a.zoneLeft;a.dir=1}if(a.x>=a.zoneRight){a.x=a.zoneRight;a.dir=-1}
+ a.y=Math.max(100,Math.min(WORLD.h-30,a.y));
+ if(game.hunted&&a===game.chaser&&Math.hypot(game.x-a.x,game.y-a.y)<31){game.playerDead=true;game.hunted=false;showGameOver();}
+});
+game.cameraX=Math.max(0,Math.min(WORLD.w-c.width/zoom,game.x-c.width/(2*zoom)));game.cameraY=Math.max(0,Math.min(WORLD.h-c.height/zoom,game.y-c.height/(2*zoom)));
+}sendPlayerState(t);draw();requestAnimationFrame(frame)}
+function showGameOver(){
+ // 동물에게 잡혀도 기지에 모아 둔 동물은 절대 잃지 않습니다. 운반 중인 알만 잃습니다.
+ if(game.carrying){game.carrying.lost=true;game.carrying=null;}
+ game.hunted=false;
+ game.chaser=null;
+ say('동물에게 잡혔습니다! 운반 중이던 알만 잃었습니다. 기지의 동물과 돈은 안전합니다.');
+ ui();
+ setTimeout(()=>{
+   game.x=160;game.y=300;game.cameraX=Math.max(0,Math.min(WORLD.w-c.width/zoom,game.x-c.width/(2*zoom)));game.cameraY=Math.max(0,Math.min(WORLD.h-c.height/zoom,game.y-c.height/(2*zoom)));
+   game.carrying=null;game.hunted=false;game.chaser=null;game.playerDead=false;game.lastTime=0;
+   say('기지에서 다시 시작했습니다. 아직 훔치지 않은 알은 맵에 남아 있습니다.');
+   ui();
+ },700);
+}
+
+const trainingDurations=[60,120,240,480,600,2040,3000,3600];
+function nextTrainingDuration(){return trainingDurations[Math.min(game.trainingCount,trainingDurations.length-1)];}
+function formatTrainingDuration(seconds){if(seconds===3600)return '1시간';if(seconds===3000)return '50분';if(seconds===2040)return '34분';if(seconds>=60&&seconds%60===0)return (seconds/60)+'분';return seconds+'초';}
+function bind(id,dir){const b=$(id);const on=e=>{e.preventDefault();touch[dir]=true};const off=e=>{e.preventDefault();touch[dir]=false};b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,off))}
+bind('left','left');bind('right','right');bind('up','up');bind('down','down');
+// Analog touch joystick: drag the knob in any direction to move.
+const joyBase=$('joystick'),joyKnob=$('joy-knob');let joyPointer=null;
+function updateJoy(e){const r=joyBase.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let x=e.clientX-cx,y=e.clientY-cy;const max=r.width*.29,d=Math.hypot(x,y)||1;if(d>max){x=x/d*max;y=y/d*max;}joy.x=x/max;joy.y=y/max;joyKnob.style.left=(r.width/2-27+x)+'px';joyKnob.style.top=(r.height/2-27+y)+'px';}
+joyBase.addEventListener('pointerdown',e=>{e.preventDefault();joyPointer=e.pointerId;joy.active=true;joyBase.setPointerCapture(e.pointerId);updateJoy(e)});
+joyBase.addEventListener('pointermove',e=>{if(joyPointer===e.pointerId){e.preventDefault();updateJoy(e)}});
+function resetJoy(e){if(joyPointer!==null&&(e.pointerId===undefined||e.pointerId===joyPointer)){joyPointer=null;joy.active=false;joy.x=0;joy.y=0;joyKnob.style.left='36px';joyKnob.style.top='36px';}}
+joyBase.addEventListener('pointerup',resetJoy);joyBase.addEventListener('pointercancel',resetJoy);
+function setZoom(next){zoom=Math.max(0.65,Math.min(1.8,next));$('zoomlevel').textContent=Math.round(zoom*100)+'%';game.cameraX=Math.max(0,Math.min(WORLD.w-c.width/zoom,game.x-c.width/(2*zoom)));game.cameraY=Math.max(0,Math.min(WORLD.h-c.height/zoom,game.y-c.height/(2*zoom)));draw();}
+$('zoomin').onclick=()=>setZoom(zoom+0.15);$('zoomout').onclick=()=>setZoom(zoom-0.15);$('zoomreset').onclick=()=>setZoom(1);$('help-toggle').onclick=()=>{$('help-panel').classList.toggle('hidden')};$('help-close').onclick=()=> $('help-panel').classList.add('hidden');
+$('act').onclick=action;
+$('train').onclick=()=>{if(game.training){say('런닝머신 훈련이 진행 중입니다. '+formatTrainingDuration(Math.ceil(game.trainingLeft))+' 남았습니다.');return}const duration=nextTrainingDuration();game.trainingCount++;game.training=true;game.trainingLeft=duration;game.x=255;game.y=275;game.cameraX=Math.max(0,Math.min(WORLD.w-c.width/zoom,game.x-c.width/(2*zoom)));game.cameraY=Math.max(0,Math.min(WORLD.h-c.height/zoom,game.y-c.height/(2*zoom)));say('런닝머신 훈련 시작! '+formatTrainingDuration(duration)+' 동안 훈련합니다. 훈련 중에는 움직일 수 없습니다.');$('train').textContent='훈련 중: '+formatTrainingDuration(duration);ui()};
+$('upgrade').onclick=()=>{say('내 기지는 처음부터 100마리까지 수용할 수 있습니다. 현재 '+game.pets.length+'/100');};
+$('home').onclick=()=>{game.x=160;game.y=300;game.cameraX=Math.max(0,Math.min(WORLD.w-c.width/zoom,game.x-c.width/(2*zoom)));game.cameraY=Math.max(0,Math.min(WORLD.h-c.height/zoom,game.y-c.height/(2*zoom)));if(game.carrying){const egg=game.carrying;game.carrying=null;game.eggs++;game.money+=10;const pool=egg.type.pool.map(i=>species[i]);const p=pool[Math.floor(Math.random()*pool.length)]||species[0];if(game.pets.length<100)game.pets.push({name:p.name,icon:p.icon,income:p.income});say('기지로 귀환! '+egg.type.name+'에서 '+p.icon+' '+p.name+'이(가) 나왔습니다.');}else say('내 기지로 귀환했습니다.');ui()};
+function renderTrade(){
+ const box=$('trade-items');
+ const eggPrices=[180,350,700,1400,2600,4200,6500,9000,12000];
+ box.innerHTML='';
+ eggTypes.forEach((egg,i)=>{
+   const price=eggPrices[i];
+   const b=document.createElement('button');
+   b.textContent=egg.icon+' '+egg.name+' ['+egg.rarity+'] 구매 · $'+price;
+   b.disabled=game.money<price || !!game.carrying;
+   b.style.opacity=b.disabled?'.5':'1';
+   b.onclick=()=>{
+     if(game.carrying){say('이미 알을 들고 있습니다. 먼저 기지로 가져가세요.');return;}
+     if(game.money<price){say('돈이 부족합니다. '+egg.name+' 가격은 $'+price+'입니다.');return;}
+     game.money-=price;game.carrying={type:egg,tradeBought:true};
+     say(egg.name+'을(를) $'+price+'에 구매했습니다! 기지로 가져가세요.');ui();renderTrade();
+   };
+   box.appendChild(b);
+ });
+ if(game.pets.length){
+   game.pets.forEach((pet,index)=>{
+     const price=Math.max(10,pet.income*25);
+     const b=document.createElement('button');
+     b.textContent=pet.icon+' '+pet.name+' 판매 · +$'+price;
+     b.onclick=()=>{
+       if(!game.pets[index])return;
+       const sold=game.pets.splice(index,1)[0];game.money+=price;
+       say(sold.icon+' '+sold.name+'을(를) 상인에게 $'+price+'에 판매했습니다.');ui();renderTrade();
+     };
+     box.appendChild(b);
+   });
+ }
+}
+$('trade-toggle').onclick=()=>{if(!started)return;$('trade-panel').classList.toggle('hidden');renderTrade();if(!$('trade-panel').classList.contains('hidden'))say('거래 모드가 열렸습니다. 알 구매 또는 기지 동물 판매를 선택하세요.');};
+$('trade-close').onclick=()=>$('trade-panel').classList.add('hidden');
+
+function addChatLine(nick,text){const row=document.createElement('div');row.textContent=nick+': '+text;$('chatlog').appendChild(row);$('chatlog').scrollTop=$('chatlog').scrollHeight;while($('chatlog').children.length>80)$('chatlog').firstChild.remove();}
+function sendChat(){const val=$('chatinput').value.trim();if(!val)return;if(socket&&socket.readyState===WebSocket.OPEN){socket.send(JSON.stringify({type:'chat',text:val}));}else{addChatLine('시스템','서버에 연결되지 않아 채팅을 보낼 수 없습니다.');}$('chatinput').value='';}
+$('send').onclick=sendChat;$('chatinput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendChat()}});
+setInterval(()=>{if(started){game.money+=game.pets.reduce((a,p)=>a+p.income,0);ui()}},1000);
+ui();draw();requestAnimationFrame(frame);
+</script></body></html>
